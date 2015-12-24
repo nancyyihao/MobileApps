@@ -1,37 +1,72 @@
 package android.jason.mobileapps;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.os.Parcelable;
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RemoteViews;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-    @Override
+    private NotifyDataReceiver receiver;
+    private LinearLayout rootLayout;
+    private Button button;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+        rootLayout = (LinearLayout) findViewById(R.id.root_layout);
+        registerBroadcast();
+
+        button = (Button) findViewById(R.id.test_button);
+        button.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO
+                Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                startActivityForResult(intent, 0);
+            }
+        });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    private void registerBroadcast() {
+        receiver = new NotifyDataReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(".NotificationService");
+        this.registerReceiver(receiver, filter);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    private class NotifyDataReceiver extends BroadcastReceiver {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            Parcelable notifyParcelable = intent.getParcelableExtra("NotifyData");
+
+            if (notifyParcelable != null) {
+                Notification notification = (Notification) notifyParcelable;
+                Toast.makeText(getApplicationContext(), "msg coming!!!", Toast.LENGTH_LONG).show();
+
+                RemoteViews remoteViews = notification.contentView ;
+                View v = remoteViews.apply(MainActivity.this,rootLayout);
+                rootLayout.addView(v);
+            }
+
         }
-
-        return super.onOptionsItemSelected(item);
     }
 }
