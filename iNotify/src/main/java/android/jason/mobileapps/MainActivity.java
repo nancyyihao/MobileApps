@@ -59,12 +59,27 @@ public class MainActivity extends Activity {
             Parcelable notifyParcelable = intent.getParcelableExtra("NotifyData");
 
             if (notifyParcelable != null) {
-                Notification notification = (Notification) notifyParcelable;
-                Toast.makeText(getApplicationContext(), "msg coming!!!", Toast.LENGTH_LONG).show();
-
+                final Notification notification = (Notification) notifyParcelable;
+                //Toast.makeText(getApplicationContext(), "msg coming!!!", Toast.LENGTH_LONG).show();
+                ToastUtil.init(getApplicationContext());
+                ToastUtil.show("hello world!");
+                ToastUtil.eixt();
                 RemoteViews remoteViews = notification.contentView ;
+                if (remoteViews == null) {
+                    return ;
+                }
                 View v = remoteViews.apply(MainActivity.this,rootLayout);
                 rootLayout.addView(v);
+                v.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        try {
+                            notification.contentIntent.send();
+                        } catch (PendingIntent.CanceledException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
             }
 
         }
